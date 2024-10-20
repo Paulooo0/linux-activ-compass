@@ -149,6 +149,10 @@ Adicinando o seguinte código para executar a tarefa desejada
 */5 * * * * check_nginx.sh
 ```
 
+Resultado final:
+<img src="img/image5.png">
+<img src="img/image6.png">
+
 ### Fazer o versionamento da atividade
 
 Iniciando um novo repositório:
