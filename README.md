@@ -54,80 +54,99 @@ if systemctl is-active --quiet nginx; then
 fi
 ```
 
-Armazenando o resultado:
+Armazenando o resultado e tratando permissões:
 ```bash
-if [[ -f "nginx_logs/result.txt" ]]; then
-  echo "$log" >> result.txt
-else
-  mkdir "nginx_logs"
-  echo "$log" > result.txt
+log_dir="/var/log/nginx/"
+log_file="result.txt"
+
+if [[ ! -d "$log_dir" ]]; then
+	echo "check_nginx: Diretório $log_dir não encontrado, nessário permissão para criar diretório"
+	sudo mkdir -p "$log_dir"
+	sudo chmod 755 "$log_dir"
 fi
+
+if [[ ! -w "$log_dir" ]]; then
+	echo "check_nginx: Não é permitido escrita em $log_dir, necessário permissão para prosseguir"
+	sudo chmod 755 "$log_dir"
+fi
+echo "$log" >> "$log_dir$log_file"
 ```
 
-### O script deve conter - Data HORA + nome do serviço + Status + mensagem personalizada de ONLINE ou offline
+### O script deve conter - data e hora + nome do serviço + status + mensagem personalizada de online ou offline
 
-Alterando a condicional para atender os novos requisitos:
+Alterando as condições para atender os novos requisitos:
 ```bash
 if systemctl is-active --quiet nginx; then
   status="ONLINE"
+	colored_status="\e[32m$status\e[0m"
   message="Nginx está rodando!"
 else
   status="OFFLINE"
+	colored_status="\e[31m$status\e[0m"
   message="Nginx não está ativo ou está com problemas!"
 fi
 ```
 
-Atualizando a saída do script:
+Atualizando o resultado final do script:
 ```bash
 timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-log="$timestamp Nginx $status - $message"
-
-if [[ -d "nginx_logs" ]]; then
-  if [[ -f "result.txt" ]]; then
-    echo "$log" >> result.txt
-  else
-    echo "$log" > result.txt
-  fi
-else
-  mkdir "nginx_logs"
-  echo "$log" > "nginx_logs/$log_file"
-fi  
+log="$timestamp Nginx $colored_status - $message"
+echo -e "$log" >> "$log_dir$log_file"
 ```
 
-### O script deve gerar 2 arquivos de saída: 1 para o serviço online e 1 para o serviço OFFLINE
+### O script deve gerar 2 arquivos de saída: 1 para o serviço online e 1 para o serviço offline
 
 Criando a diferenciação dos arquivos de saída:
 ```bash
-timestamp=$(date "+%y-%m-%d %h:%m:%s")
-log="$timestamp Nginx $status - $message"
-
-if [[ $status == "ONLINE" ]]; then
-  log_file="online_log.txt"
-elif [[ $status == "OFFLINE" ]]; then
-  log_file="offline_log.txt"
-fi
-
-if [[ -d "nginx_logs" ]]; then
-  if [[ -f "nginx_logs/$log_file" ]]; then
-    echo "$log" >> "nginx_logs/$log_file"
-  else
-    echo "$log" > "nginx_logs/$log_file"
-  fi
+if systemctl is-active --quiet nginx; then
+	status="ONLINE"
+	colored_status="\e[32m$status\e[0m"
+	message="Nginx está rodando!"
+	log_file="online_log.txt"
 else
-  mkdir "nginx_logs"
-  echo "$log" > "nginx_logs/$log_file"
+	status="OFFLINE"
+	colored_status="\e[31m$status\e[0m"
+	message="Nginx não está ativo ou está com problemas!"
+	log_file="offline_log.txt"
 fi
+
+log_dir="/var/log/nginx/"
+
+if [[ ! -d "$log_dir" ]]; then
+	echo "check_nginx: Diretório $log_dir não encontrado, criando diretório"
+	sudo mkdir -p "$log_dir"
+	sudo chmod 755 "$log_dir"
+fi
+
+if [[ ! -w "$log_dir" ]]; then
+	echo "check_nginx: Não é permitido escrita em $log_dir, necessário permissão para prosseguir"
+	sudo chmod 755 "$log_dir"
+fi
+
+timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+log="$timestamp Nginx $colored_status - $message"
+echo -e "$log" >> "$log_dir$log_file"
 ```
 
 ### Preparar a execução automatizada do script a cada 5 minutos
+Adicionando o script para um diretório que está no PATH, para que seja executado sem restrições de diretório:
+```bash
+sudo cp ./check_nginx.sh /usr/bin
+```
+
+Dando permissão de execução para o script:
+```bash
+sudo chmod +x check_nginx.sh
+```
+
 Abrindo o agendador de tarefas do Linux:
 ```bash
 crontab -e
 ```
 
-Adicinando o seguinte código para executar a tarefa como o desejado (o caminho é relativo ao local em que estou armazenando o script)
+Adicinando o seguinte código para executar a tarefa desejada
 ```bash
-*/5 * * * * ~/code/linux-activ-compass/check_nginx.sh
+*/5 * * * * check_nginx.sh
 ```
 
 ### Fazer o versionamento da atividade

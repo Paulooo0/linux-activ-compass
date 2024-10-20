@@ -1,31 +1,30 @@
 #!/bin/bash
 
 if systemctl is-active --quiet nginx; then
-  status="ONLINE"
-  message="Nginx está rodando!"
+	status="ONLINE"
+	colored_status="\e[32m$status\e[0m"
+	message="Nginx está rodando!"
+	log_file="online_log.txt"
 else
-  status="OFFLINE"
-  message="Nginx não está ativo ou está com problemas!"
+	status="OFFLINE"
+	colored_status="\e[31m$status\e[0m"
+	message="Nginx não está ativo ou está com problemas!"
+	log_file="offline_log.txt"
 fi
 
-echo "$message"
+log_dir="/var/log/nginx/"
 
-timestamp=$(date "+%y-%m-%d %h:%m:%s")
-log="$timestamp Nginx $status - $message"
-
-if [[ $status == "ONLINE" ]]; then
-  log_file="online_log.txt"
-elif [[ $status == "OFFLINE" ]]; then
-  log_file="offline_log.txt"
+if [[ ! -d "$log_dir" ]]; then
+	echo "check_nginx: Diretório $log_dir não encontrado, nessário permissão para criar diretório"
+	sudo mkdir -p "$log_dir"
+	sudo chmod 755 "$log_dir"
 fi
 
-if [[ -d "nginx_logs" ]]; then
-  if [[ -f "nginx_logs/$log_file" ]]; then
-    echo "$log" >> "nginx_logs/$log_file"
-  else
-    echo "$log" > "nginx_logs/$log_file"
-  fi
-else
-  mkdir "nginx_logs"
-  echo "$log" > "nginx_logs/$log_file"
+if [[ ! -w "$log_dir" ]]; then
+	echo "check_nginx: Não é permitido escrita em $log_dir, necessário permissão para prosseguir"
+	sudo chmod 755 "$log_dir"
 fi
+
+timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+log="$timestamp Nginx $colored_status - $message"
+echo -e "$log" >> "$log_dir$log_file"
