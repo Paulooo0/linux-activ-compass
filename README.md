@@ -8,9 +8,19 @@ wsl --install Ubuntu
 ```
 Com o commando `wsl --install Ubuntu`, rapidamente é instalada a versão mais recente do Ubuntu LTS.
 
+Para acessar o seu Linux, basta apertar o botão `Win` do Windows e digitar o nome da sua distribuição Linux, que neste caso, é `Ubuntu`.
+
+Ao acessar pela primeira vez, você criará um usuário e senha. Após criado o usuário, digite os seguintes comandos para ver os detalhes do seu sistema:
+```bash
+uname -a
+lsb_release -a
+```
+
 Detalhes do sistema:
 
 <img src="img/image1.png">
+
+**Após seguir estes passos, seu `Linux` via `WSL` está devidamente instalado.**
 
 ## Atividade no Linux:
 ### Subir um servidor Nginx, deve estar online e rodando
@@ -182,4 +192,4 @@ git push -U origin main
 ```
 
 ### Fazer a documentação explicando o processo de instalação do Linux.
-<a src="https://github.com/Paulooo0/linux-activ-compass/blob/main/README.md">README.md</a>
+[Criar um ambiente Linux no Windows](#Criar-um-ambiente-Linux-no-Windows)
