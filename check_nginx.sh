@@ -17,12 +17,12 @@ log_dir="/var/log/nginx/"
 if [[ ! -d "$log_dir" ]]; then
 	echo "check_nginx: Diretório $log_dir não encontrado, nessário permissão para criar diretório"
 	sudo mkdir -p "$log_dir"
-	sudo chmod 755 "$log_dir"
+	sudo chmod 775 "$log_dir"
 fi
 
 if [[ ! -w "$log_dir" ]]; then
 	echo "check_nginx: Não é permitido escrita em $log_dir, necessário permissão para prosseguir"
-	sudo chmod 755 "$log_dir"
+	sudo chmod 775 "$log_dir"
 fi
 
 timestamp=$(date "+%Y-%m-%d %H:%M:%S")
